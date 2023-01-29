@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEMA-OMS 통합관리시스템 list</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.slim.min.js" integrity="sha256-ZwqZIVdD3iXNyGHbSYdsmWP//UBokj2FHAxKuSBKDSo=" crossorigin="anonymous"></script>
+</head>
+<style>
+    table {border-collapse:collapse;border-spacing:0;}
+    table td, strong {font-weight:normal;}
+    body{margin:20px;}
+    h1{margin:0 0 10px 0;}
+    a {display: block; text-decoration:none;}
+    a:hover {text-decoration:underline;}
+    .header {display: flex; justify-content: space-between; flex-wrap: wrap;}
+    hr {width: 100%;}
+    .header h1 {display: flex; align-items: center;}
+    .header > div {background-color: #f3f3f3; padding: 0 30px; border-radius: 5px;}
+    .header div p {text-align: right; margin: 0; line-height: 30px; font-size: 14px;}
+    .list_w table {width:100%;margin:20px auto;border-top: solid 2px #555;border-collapse:collapse;border-spacing:0;font-size:12px;text-align:left;}
+    .list_w table tr:hover {background:#f3f3f3;}
+    .list_w table th {padding: 7px 5px;	border: solid 1px #ddd;background: #efefef;vertical-align:middle; text-align: center;}
+    .list_w table td {padding: 7px 3px;border:solid 1px #ccc;vertical-align:middle;}
+    .list_w table td:nth-child(2) {text-align: left;}
+    .list_w table tr.on td {background: rgb(227, 235, 227);}
+    .list_w table tr.title th {background:#666;color:#fff;font-size:18px;border:0;padding-top:7px;}
+    .lastmdate {color: #1155CC;}
+    .stand_by {color:#777;}
+    .ing {color:#4848D4;}
+    .red {background-color: rgb(173, 13, 13); color: #fff; padding: 2px 5px;}
+    .blue {background-color: rgb(28, 60, 167); color: #fff; padding: 2px 5px; margin-left: 3px;}
+    .end {color:green;}
+    .list_w table td.link,
+    .list_w table td.etc{text-align: left; padding-left:10px;}
+    #list td{background: #fff;}
+    #list td.con, #list td.date {text-align: center;}
+    .list_w thead tr td {text-align: center;}
+    #list tr:hover td {background: #f3f3f3;}
+    #list tr td:nth-child(1),
+    #list tr td:nth-child(2),
+    #list tr td:nth-child(5),
+    #list tr td:nth-child(6) {text-align: center;}
+    .header > div.file {background-color: transparent; padding: 0; border-radius: 0;}
+    .file ul {display: flex; flex-wrap: wrap; gap: 5px 10px; padding: 0; margin: 0;}
+    .file li {list-style: none;}
+    .file li a {display: flex; padding: 8px 20px; background-color: #f5f5f5; border-radius: 50px; font-size: 12px;}
+    .file li.front a {background-color: #4848D4; color: #fff;}
+    .file li:hover a {text-decoration: none; background-color: #666; color: #fff;}
+    .file li.front:hover a {background-color: #181866;}
+    .design div {display: flex; justify-content: center;}
+    .design div a {display: flex; justify-content: center; border-radius: 20px; padding: 3px 15px; background-color: #4848D4; color: #fff;}
+    .design div a.none {background-color: #aaa;}
+    .none_tr td {background-color: #aaa !important; color: #bbb !important;}
+    .none_tr td a {color: #bbb;}
+</style>
+<body>
+    <div class="wrap">
+        <div class="header">
+            <h1>SEMA-OMS 통합관리시스템 퍼블리싱 리스트</h1>
+            <div>
+                <p>완료된 페이지 : <span class="curr_n"></span>page / Total : <span class="total_n"></span>page</p>
+                <p>진행율 : <span class="per"></span></p>
+            </div>
+            <hr />
+            <div class="file">
+                <ul>
+                    <li><a href="./file/20230129_pub.zip" download>20230129_pub</a></li>
+                </ul>
+            </div>
+            <hr />
+        </div>
+
+        <div class="list_w">
+            <table class="codinglist">
+                <colgroup>
+                    <col width="3%" />
+                    <col width="12%" />
+                    <col width="27%" />
+                    <col width="18%" />
+                    <col width="6%" />
+                    <col width="4%" />
+                    <col width="*" />
+                </colgroup>
+                <thead>
+                    <tr class="title">
+                        <th colspan="7">블루플러그</th>
+                    </tr>
+                    <tr>
+                        <th>no.</th>
+                        <th>구분</th>
+                        <th>페이지명</th>
+                        <th>경로</th>
+                        <th>날짜</th>
+                        <th>상태</th>
+                        <th>비고</th>
+                    </tr>
+                </thead>
+                <tbody id="list"></tbody>
+            </table>
+        </div>
+    </div>
+    <script defer>
+        
+        $(function(){
+            let menuTableHeader = ['type', '구분', '페이지명', '경로', '날짜', '상태', '비고']
+    
+            // 객체 초기화
+            let menuDefault = {
+                type:'',
+                division: '',
+                depth1:'',
+                path:'',
+                date:'',
+                con:'',
+                etc:'',
+            };
+        
+            // 배열 추가
+            let menuTableList = [
+                //value값이 없으면 빈문자열로 남기기
+
+                // 메인화면
+                {
+                    division: '메인화면',
+                    depth1:'메인화면',
+                    path:'./html/TM-0006.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'로그인',
+                    path:'./html/TM-0001.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'아이디 찾기',
+                    path:'./html/TM-0002.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'아이디 찾기 결과',
+                    path:'./html/TM-0003.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'비밀번호 찾기',
+                    path:'./html/TM-0004.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'비밀번호 찾기 결과',
+                    path:'./html/TM-0005.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+
+                // 서비스안내
+                
+                {
+                    division: '',
+                    depth1:'SEMA-OMS',
+                    path:'./html/TM-0101.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'서비스 결제안내',
+                    path:'./html/TM-0102.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'로그인 > 기관등록',
+                    path:'./html/TM-0007.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'로그인 > 기관등록 > 기관 정보 등록',
+                    path:'./html/TM-0008.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'로그인 > 기관등록 > 서비스 메뉴 선택',
+                    path:'./html/TM-0009.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'로그인 > 기관등록 > 신청완료',
+                    path:'./html/TM-0011.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                
+                {
+                    division: '서비스안내',
+                    depth1:'서비스신청 > 서비스사용 정보',
+                    path:'./html/TM-0203.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'서비스신청 > 계약 정보',
+                    path:'./html/TM-0204.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'서비스 상태',
+                    path:'./html/TM-0205.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'서비스 상세',
+                    path:'./html/TM-0206.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'사용자 관리',
+                    path:'./html/TM-0207.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'사용자 관리 > 등록',
+                    path:'./html/TM-0208.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+
+                // 기관정보
+                {
+                    division: '기관정보',
+                    depth1:'나의 기관정보',
+                    path:'./html/TM-0401.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'나의 기관정보 > 회원탈퇴',
+                    path:'./html/TM-0402.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'기관정보 > 서비스사용 정보',
+                    path:'./html/TM-0403.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'기관정보 > 정산내역',
+                    path:'./html/TM-0404.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'기관정보 > 정보 변경신청',
+                    path:'./html/TM-0405.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+
+                // 서비스관리
+                {
+                    division: '서비스관리',
+                    depth1:'사용자관리',
+                    path:'./html/TM-0501.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'사용자관리 > 사용자정보 등록관리',
+                    path:'./html/TM-0502.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]'
+                },
+                {
+                    division: '',
+                    depth1:'시스템관리',
+                    path:'./html/TM-0503.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'서비스관리 > 부서관리',
+                    path:'./html/TM-0504.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'서비스관리 > 사용자별 권한관리',
+                    path:'./html/TM-0505.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'서비스관리 > 부서 권한관리',
+                    path:'./html/TM-0506.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'서비스관리 > 평가기준설정',
+                    path:'./html/TM-0507.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+
+                // 게시판
+                {
+                    division: '게시판',
+                    depth1:'공지사항',
+                    path:'./html/TM-0601.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'공지사항 등록 관리',
+                    path:'./html/TM-0602.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'공지사항 상세',
+                    path:'./html/TM-0603.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'FAQ 목록',
+                    path:'./html/TM-0604.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'FAQ 등록',
+                    path:'./html/TM-0605.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'자료실 목록',
+                    path:'./html/TM-0606.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'자료실 등록 관리',
+                    path:'./html/TM-0607.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'자료실 상세',
+                    path:'./html/TM-0608.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'고객문의',
+                    path:'./html/TM-0609.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'고객문의 답변',
+                    path:'./html/TM-0610.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+
+                // 정산관리
+                {
+                    division: '정산관리',
+                    depth1:'정산정보',
+                    path:'./html/TM-0701.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'정산정보 상세',
+                    path:'./html/TM-0702.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'정산정보 등록',
+                    path:'./html/TM-0703.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+
+                // 시스템관리
+                {
+                    division: '시스템관리',
+                    depth1:'기관/기업관리',
+                    path:'./html/TM-0801.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'기관/기업관리 상세',
+                    path:'./html/TM-0802.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'메뉴관리',
+                    path:'./html/TM-0803.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'게시판설정관리',
+                    path:'./html/TM-0804.html',
+                    date:'',
+                    con:'',
+                    etc:''
+                },
+                {
+                    division: '',
+                    depth1:'통합 코드관리',
+                    path:'./html/TM-0805.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+                {
+                    division: '',
+                    depth1:'서비스신청리스트',
+                    path:'./html/TM-0806.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위] 기획서 부정확'
+                },
+                {
+                    division: '',
+                    depth1:'평가지표관리',
+                    path:'./html/TM-0807.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+
+                // 공통팝업
+                {
+                    division: '공통팝업',
+                    depth1:'팝업',
+                    path:'./html/TM-0901.html',
+                    date:'',
+                    con:'',
+                    etc:'[1순위]',
+                },
+            ];
+        
+
+            // 작업리스트 화면에 출력
+            let html;
+            for(let i=0; i < menuTableList.length; i++){
+                html += '<tr>'
+                html += '<td class="no">'+(i+1)+'</td>'
+                html += '<td>'+menuTableList[i].division+'</td>'
+                html += '<td>'+menuTableList[i].depth1+'</td>'
+                html += '<td class="link"><a href='+menuTableList[i].path+' target="_blank">'+menuTableList[i].path+'</a></td>'
+                html += '<td class="date">'+menuTableList[i].date+'</td>'
+                html += '<td class="con">'+menuTableList[i].con+'</td>'
+                html += '<td class="etc">'+menuTableList[i].etc+'</td>'
+                html += '</tr>'
+            };
+            //현재 날짜 구하기 YYYY-MM-DD 형식
+            let time = new Date();
+            let year = time.getFullYear();
+            let month = ('0' + (time.getMonth() + 1)).slice(-2);
+            let day = ('0' + time.getDate()).slice(-2);    
+            let today = year + '-' + month + '-' + day;
+
+            //완료된 페이지 개수 구하기
+            let curr_n = 0;
+            for(let i=0; i < menuTableList.length; i++) {
+                if(menuTableList[i].con === '완료'){
+                    curr_n++;
+                    
+                    setTimeout(function(){
+                        $('.con').css({'color': 'blue'});
+                    }, 100);
+                }
+                setTimeout(function(){
+                    //작업이 완료된 페이지를 제외하고 나머지 표시
+                    $('.con').not('.con:contains(완료)').css('color','red');
+                    
+                    // 날짜가 오늘날짜와 같으면 화면에 표시
+                    $('.date:contains('+ today +')').css('color','red');
+                }, 100);
+            }
+            $('.curr_n').text(curr_n);
+
+            $('#list').html(html);
+            
+            // 전체 페이지 개수 구하기
+            let total_n = $('#list tr').length;
+            $('.total_n').text(total_n);
+
+            // 진행률 나타내기
+            $('.per').text(Math.floor((curr_n/total_n)*100) + '%');
+
+            // 삭제페이지
+            $('.none').parent().parent().addClass('none_tr');
+
+        });
+
+    </script>
+</body>
+</html>
